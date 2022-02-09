@@ -1,7 +1,7 @@
 #include "gameLayer.h"
 #include "gl2d/gl2d.h"
 #include "platformInput.h"
-#include "shapeDraw.h"
+#include "glPrimitives.h"
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
@@ -15,7 +15,7 @@ gl2d::Texture texture;
 
 struct SaveData
 {
-	Camera camera;
+	glPrimitives::Camera camera;
 	bool drawMesh = 0;
 	glm::vec3 ta1;
 	glm::vec3 ta2;
@@ -39,7 +39,7 @@ struct SaveData
 
 }saveData;
 
-ShapeDraw debugDraw;
+glPrimitives::PrimitiveRenderer debugDraw;
 
 bool initGame()
 {
