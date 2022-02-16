@@ -595,24 +595,27 @@ void main()
 		drawLine(c, a, color);
 	}
 	
-	void PrimitiveRenderer::drawTriangleSolid(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 color)
+	void PrimitiveRenderer::drawTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color)
 	{
-		triangleDataSolid.push_back({a, color});
-		triangleDataSolid.push_back({b, color});
-		triangleDataSolid.push_back({c, color});
+		if (color.a >= 0.99999)
+		{
+			triangleDataSolid.push_back({a, color});
+			triangleDataSolid.push_back({b, color});
+			triangleDataSolid.push_back({c, color});
+		}
+		else
+		{
+			triangleDataTransparent.push_back({glm::vec4(a,1), color});
+			triangleDataTransparent.push_back({glm::vec4(b,1), color});
+			triangleDataTransparent.push_back({glm::vec4(c,1), color});
+		}
 	}
+
 	
-	void PrimitiveRenderer::drawTriangleTransparent(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color)
-	{
-		triangleDataTransparent.push_back({glm::vec4(a,1), color});
-		triangleDataTransparent.push_back({glm::vec4(b,1), color});
-		triangleDataTransparent.push_back({glm::vec4(c,1), color});
-	}
-	
-	void PrimitiveRenderer::drawTriangleFancy(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color)
+	void PrimitiveRenderer::drawTriangleWithBorder(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color)
 	{
 		drawTriangleMesh(a, b, c, color);
-		drawTriangleTransparent(a, b, c, color);
+		drawTriangle(a, b, c, color);
 	}
 	
 	void PrimitiveRenderer::drawLine(glm::vec3 a, glm::vec3 b, glm::vec3 color)

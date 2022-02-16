@@ -100,10 +100,13 @@ namespace glPrimitives
 
 	struct PrimitiveRenderer
 	{
+		//inits the renderer
 		void init(int w, int h);
 
+		//updates window size
 		void updateWindowMetrics(int w, int h);
 
+		//renderes the primitives
 		void flush(Camera &camera);
 
 		int w = 0;
@@ -114,11 +117,19 @@ namespace glPrimitives
 		GLuint colorBuff[DEPTH_PEEL_PASSES];
 		GLuint depthBuff[DEPTH_PEEL_PASSES];
 
+		//draws a wired triangle. 
 		void drawTriangleMesh(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 color);
-		void drawTriangleSolid(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 color);
-		void drawTriangleTransparent(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color);
-		void drawTriangleFancy(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color);
+		
+		//draws a solid triangle
+		void drawTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color);
+		
+		//draws a solid triangle and a border around it
+		void drawTriangleWithBorder(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color);
+		
+		//draws a line
 		void drawLine(glm::vec3 a, glm::vec3 b, glm::vec3 color);
+		
+		//draws a point
 		void drawPoint(glm::vec3 a, glm::vec3 color);
 
 		std::vector<Vertex> triangleDataSolid;

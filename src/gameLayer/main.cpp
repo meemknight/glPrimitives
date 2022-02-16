@@ -105,6 +105,7 @@ bool gameLogic(float deltaTime)
 	ImGui::DragFloat3("Triangle1 3", &saveData.tc1[0], 0.01);
 	ImGui::DragFloat3("Triangle2 3", &saveData.tc2[0], 0.01);
 	ImGui::DragFloat3("Triangle3 3", &saveData.tc3[0], 0.01);
+	saveData.triangleColor3.a = 1.f;
 	ImGui::NewLine();
 
 	ImGui::ColorEdit3("Vertical line color", &saveData.verticalLineColor[0]);
@@ -197,13 +198,13 @@ bool gameLogic(float deltaTime)
 #pragma region draw stuff
 
 
-	debugDraw.drawTriangleFancy(saveData.ta1, saveData.ta2, saveData.ta3,
+	debugDraw.drawTriangleWithBorder(saveData.ta1, saveData.ta2, saveData.ta3,
 		saveData.triangleColor1);
 
-	debugDraw.drawTriangleFancy(saveData.tb1, saveData.tb2, saveData.tb3,
+	debugDraw.drawTriangleWithBorder(saveData.tb1, saveData.tb2, saveData.tb3,
 		saveData.triangleColor2);
 
-	debugDraw.drawTriangleSolid(saveData.tc1, saveData.tc2, saveData.tc3,
+	debugDraw.drawTriangle(saveData.tc1, saveData.tc2, saveData.tc3,
 		saveData.triangleColor3);
 
 	debugDraw.drawLine(
