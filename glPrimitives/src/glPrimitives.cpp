@@ -1,5 +1,6 @@
-#include "glPrimitives.h"
+#include <glPrimitives/glPrimitives.h>
 #include <iostream>
+#include <fstream>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,6 +10,156 @@
 
 namespace glPrimitives
 {
+
+	namespace internal
+	{
+
+		GLint createShaderFromData(const char *data, GLenum shaderType)
+		{
+			GLuint shaderId = glCreateShader(shaderType);
+			glShaderSource(shaderId, 1, &data, nullptr);
+			glCompileShader(shaderId);
+
+			GLint rezult = 0;
+			glGetShaderiv(shaderId, GL_COMPILE_STATUS, &rezult);
+
+			if (!rezult)
+			{
+				char *message = 0;
+				int   l = 0;
+
+				glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &l);
+
+				if (l)
+				{
+					message = new char[l];
+
+					glGetShaderInfoLog(shaderId, l, &l, message);
+
+					message[l - 1] = 0;
+
+					std::cout << data << ":\n" << message << "\n";
+
+					delete[] message;
+
+				}
+				else
+				{
+					std::cout << data << ":\n" << "unknown error" << "\n";
+				}
+
+				glDeleteShader(shaderId);
+
+				shaderId = 0;
+				return shaderId;
+			}
+
+			return shaderId;
+
+		}
+
+		GLint createShaderFromFile(const char *source, GLenum shaderType)
+		{
+			std::ifstream file;
+			file.open(source);
+
+			if (!file.is_open())
+			{
+				std::cout << "Error openning file: " << source << "\n";
+				return 0;
+			}
+
+			GLint size = 0;
+			file.seekg(0, file.end);
+			size = file.tellg();
+			file.seekg(0, file.beg);
+
+			char *fileContent = new char[size + 1]{};
+
+			file.read(fileContent, size);
+
+
+			file.close();
+
+			auto rez = createShaderFromData(fileContent, shaderType);
+
+			delete[] fileContent;
+
+			return rez;
+
+		}
+
+		bool Shader::loadShaderProgramFromMemory(const char *vertexShader, const char *fragmentShader)
+		{
+			auto vertexId = createShaderFromData(vertexShader, GL_VERTEX_SHADER);
+			auto fragmentId = createShaderFromData(fragmentShader, GL_FRAGMENT_SHADER);
+
+			if (vertexId == 0 || fragmentId == 0)
+			{
+				return 0;
+			}
+
+			id = glCreateProgram();
+
+			glAttachShader(id, vertexId);
+			glAttachShader(id, fragmentId);
+
+			glLinkProgram(id);
+
+			glDeleteShader(vertexId);
+			glDeleteShader(fragmentId);
+
+			GLint info = 0;
+			glGetProgramiv(id, GL_LINK_STATUS, &info);
+
+			if (info != GL_TRUE)
+			{
+				char *message = 0;
+				int   l = 0;
+
+				glGetProgramiv(id, GL_INFO_LOG_LENGTH, &l);
+
+				message = new char[l];
+
+				glGetProgramInfoLog(id, l, &l, message);
+
+				std::cout << "Link error: " << message << "\n";
+
+				delete[] message;
+
+				glDeleteProgram(id);
+				id = 0;
+				return 0;
+			}
+
+			glValidateProgram(id);
+
+			return true;
+		}
+
+		void Shader::bind()
+		{
+			glUseProgram(id);
+		}
+
+		void Shader::clear()
+		{
+			glDeleteProgram(id);
+			id = 0;
+		}
+
+		GLint getUniform(GLuint id, const char *name)
+		{
+			GLint uniform = glGetUniformLocation(id, name);
+			if (uniform == -1)
+			{
+				std::cout << "uniform error " << name << "\n";
+			}
+			return uniform;
+		};
+
+	};
+
 
 
 	glm::mat4x4 Camera::getProjectionMatrix()
@@ -73,26 +224,140 @@ noMove:
 
 	}
 
+	const char *colorShaderVert =
+		R"(
+#version 330 core
+
+in layout(location = 0) vec3 pos;
+in layout(location = 1) vec4 color;
+
+uniform mat4 u_viewProjection;
+
+out vec4 v_color;
+
+void main()
+{
+	gl_Position.xyzw = u_viewProjection * vec4(pos,1);
+	v_color = color;
+}
+		
+)";
+
+	const char *colorShaderFrag =
+		R"(
+#version 330 core
+
+out layout(location = 0) vec4 outColor;
+in vec4 v_color;
+
+void main()
+{
+	outColor.rgba = v_color;
+}
+)";
+
+	const char *depthPeelVert =
+		R"(
+#version 330 core
+
+in layout(location = 0) vec3 pos;
+in layout(location = 1) vec4 color;
+
+uniform mat4 u_viewProjection;
+
+out vec4 v_color;
+out vec4 v_pos;
+
+void main()
+{
+
+	gl_Position.xyzw = u_viewProjection * vec4(pos,1);
+	v_color = color;
+	v_pos = gl_Position;
+}
+)";
+
+	const char *depthPeelFrag =
+		R"(
+#version 330 core
+
+out layout(location = 0) vec4 outColor;
+in vec4 v_color;
+in vec4 v_pos;
+
+uniform sampler2D u_depthTexture;
+uniform int u_skip;
+
+void main()
+{
+
+	if(u_skip==0)
+	{
+		vec2 p = v_pos.xy / v_pos.w;
+		p += 1;
+		p/=2;
+
+		if (gl_FragCoord.z <= texture(u_depthTexture, p).x) 
+			discard; //Manually performing the GL_GREATER depth test for each pixel
+	}
+
+
+	outColor.rgba = v_color;
+
+}	
+)";
+
+	const char *renderQuadVert = R"(
+#version 330 core
+
+in layout(location = 0) vec3 pos;
+in layout(location = 1) vec2 uvs;
+
+out vec2 v_uvs;
+
+void main()
+{
+
+	gl_Position.xyzw = vec4(pos,1);
+	v_uvs = uvs;
+
+}
+)";
+
+	const char *renderQuadFrag = R"(
+#version 330 core
+
+out layout(location = 0) vec4 outColor;
+
+in vec2 v_uvs;
+
+uniform sampler2D u_texture;
+
+void main()
+{
+
+	vec4 color = texture(u_texture, v_uvs.xy);
+	outColor.rgba = color;
+
+}
+)";
 
 	
 	void PrimitiveRenderer::init(int w, int h)
 	{
-		colorShader.loadShaderProgramFromFile
+		colorShader.loadShaderProgramFromMemory(colorShaderVert, colorShaderFrag);
+
+
+		depthPeelShader.loadShaderProgramFromMemory
 		(
-			RESOURCES_PATH "colorShader.vert",
-			RESOURCES_PATH "colorShader.frag"
+			depthPeelVert,
+			depthPeelFrag
 		);
 	
-		depthPeelShader.loadShaderProgramFromFile
+		renderQuadShader.loadShaderProgramFromMemory
 		(
-			RESOURCES_PATH "depthPeel.vert",
-			RESOURCES_PATH "depthPeel.frag"
-		);
-	
-		renderQuadShader.loadShaderProgramFromFile
-		(
-			RESOURCES_PATH "renderQuad.vert",
-			RESOURCES_PATH "renderQuad.frag"
+			renderQuadVert,
+			renderQuadFrag
 		);
 	
 		u_viewProjection = getUniform(colorShader.id, "u_viewProjection");
@@ -274,6 +539,7 @@ noMove:
 				glBindTexture(GL_TEXTURE_2D, depthBuff[i - 1]);
 			}
 			
+			//todo opengl query fragments
 			glDrawArrays(GL_TRIANGLES, 0, triangleDataTransparent.size());
 			
 		}
@@ -282,7 +548,7 @@ noMove:
 	#pragma endregion
 	
 	
-	#pragma region render quads
+	#pragma region render quads in reverse order
 		glDisable(GL_DEPTH_TEST);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		renderQuadShader.bind();

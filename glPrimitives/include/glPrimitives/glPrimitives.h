@@ -1,8 +1,8 @@
 #pragma once
-#include "shader.h"
+#include "../../../src/gameLayer/shader.h"
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
-#include "camera.h"
+#include "../../../src/gameLayer/camera.h"
 #include <vector>
 
 #include <glm/vec3.hpp>
@@ -14,6 +14,26 @@
 
 namespace glPrimitives
 {
+
+	namespace internal 
+	{
+	
+		struct Shader
+		{
+			GLuint id = 0;
+
+			bool loadShaderProgramFromMemory(const char *vertexShader, const char *fragmentShader);
+
+			void bind();
+
+			void clear();
+		};
+
+		GLint getUniform(GLuint id, const char *name);
+	
+	};
+
+
 	constexpr float PI = 3.1415926535897932384626433;
 
 	struct Camera
@@ -106,15 +126,15 @@ namespace glPrimitives
 		std::vector<Vertex> lineData;
 		std::vector<Vertex> pointData;
 
-		Shader colorShader;
+		internal::Shader colorShader;
 		GLint u_viewProjection = -1;
 
-		Shader depthPeelShader;
+		internal::Shader depthPeelShader;
 		GLint depthPeel_u_viewProjection = -1;
 		GLint depthPeel_u_depthTexture = -1;
 		GLint depthPeel_u_skip = -1;
 
-		Shader renderQuadShader;
+		internal::Shader renderQuadShader;
 		GLint renderQuad_u_texture = -1;
 
 		GLuint vertexData;
