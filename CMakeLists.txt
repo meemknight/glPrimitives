@@ -9,9 +9,6 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(thirdparty/glfw-3.3.2)
 add_subdirectory(thirdparty/glad)
-add_subdirectory(thirdparty/stb_image)
-add_subdirectory(thirdparty/stb_truetype)
-add_subdirectory(thirdparty/gl2d)
 add_subdirectory(thirdparty/glm)
 add_subdirectory(thirdparty/imgui-docking)
 add_subdirectory(glPrimitives)
@@ -56,5 +53,5 @@ target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURC
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/platform/")
 
 
-target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE glm glfw glad stb_image stb_truetype gl2d imgui glPrimitives)
+target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE glm glfw glad imgui glPrimitives)
 

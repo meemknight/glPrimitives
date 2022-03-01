@@ -1,17 +1,11 @@
 #include "gameLayer.h"
-#include "gl2d/gl2d.h"
+#include <glad/glad.h>
 #include "platformInput.h"
 #include <glPrimitives/glPrimitives.h>
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "camera.h"
 #include "myMath.h"
-
-gl2d::Renderer2D renderer;
-
-gl2d::Font font;
-gl2d::Texture texture;
 
 struct SaveData
 {
@@ -43,10 +37,6 @@ glPrimitives::PrimitiveRenderer debugDraw;
 
 bool initGame()
 {
-	renderer.create();
-	font.createFromFile(RESOURCES_PATH "roboto_black.ttf");
-	texture.loadFromFile(RESOURCES_PATH "test.jpg");
-	
 	saveData = SaveData();
 
 	if(!platform::readEntireFile(RESOURCES_PATH "saveData.bin", &saveData, sizeof(SaveData)))

@@ -1,9 +1,8 @@
 #pragma once
-#include "../../../src/gameLayer/shader.h"
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
-#include "../../../src/gameLayer/camera.h"
 #include <vector>
+#include <glad/glad.h>
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -64,6 +63,8 @@ namespace glPrimitives
 		void rotateCamera(const glm::vec2 delta);
 
 		void moveFPS(glm::vec3 direction);
+		
+		void moveFly(glm::vec3 direction);
 
 		bool operator==(const Camera &other)
 		{

@@ -1,8 +1,5 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <stb_image/stb_image.h>
-#include <stb_truetype/stb_truetype.h>
-#include "gl2d/gl2d.h"
 #include <iostream>
 #include <ctime>
 #include "platformTools.h"
@@ -22,7 +19,6 @@
 
 #undef min
 #undef max
-
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -360,10 +356,6 @@ int main()
 
 	permaAssertComment(gladLoadGL(), "err initializing glad");
 
-#pragma endregion
-
-#pragma region gl2d
-	gl2d::init();
 #pragma endregion
 
 #pragma region imgui

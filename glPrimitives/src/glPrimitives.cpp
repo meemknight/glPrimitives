@@ -1,3 +1,4 @@
+#include "..\include\glPrimitives\glPrimitives.h"
 #include <glPrimitives/glPrimitives.h>
 #include <iostream>
 #include <fstream>
@@ -224,6 +225,47 @@ noMove:
 
 	}
 
+	void Camera::moveFly(glm::vec3 direction)
+	{
+		viewDirection = glm::normalize(viewDirection);
+
+		glm::vec3 Z = -viewDirection;
+
+		glm::vec3 X;
+		glm::vec3 Y;
+
+		if (viewDirection == up)
+		{
+			X = glm::vec3(1,0,0);
+			Y = glm::vec3(0,0,1);
+		}
+		else if(viewDirection == -up)
+		{
+			X = glm::vec3(1, 0, 0);
+			Y = glm::vec3(0, 0, -1);
+		}else
+		{
+			X = glm::normalize(glm::cross(up, Z));
+			Y = glm::normalize(glm::cross(Z, X));
+		}
+
+		glm::vec4 Zaugmented(Z, 0);
+		glm::vec4 Xaugmented(X, 0);
+		glm::vec4 Yaugmented(Y, 0);
+		glm::vec4 fourtColom(0, 0, 0, 1);
+
+		glm::mat4 TBNMatrix(Xaugmented, Yaugmented, Zaugmented, fourtColom);
+		glm::mat4 TBNInverse = glm::transpose(TBNMatrix);
+
+		glm::vec4 positionAugmented(position, 1);
+
+		glm::mat4 t = glm::translate(direction);
+
+		position = TBNMatrix * t * TBNInverse * positionAugmented;
+
+
+	}
+
 	const char *colorShaderVert =
 		R"(
 #version 330 core
@@ -360,13 +402,13 @@ void main()
 			renderQuadFrag
 		);
 	
-		u_viewProjection = getUniform(colorShader.id, "u_viewProjection");
+		u_viewProjection = internal::getUniform(colorShader.id, "u_viewProjection");
 	
-		depthPeel_u_viewProjection = getUniform(depthPeelShader.id, "u_viewProjection");
-		depthPeel_u_depthTexture = getUniform(depthPeelShader.id, "u_depthTexture");
-		depthPeel_u_skip = getUniform(depthPeelShader.id, "u_skip");	
+		depthPeel_u_viewProjection = internal::getUniform(depthPeelShader.id, "u_viewProjection");
+		depthPeel_u_depthTexture = internal::getUniform(depthPeelShader.id, "u_depthTexture");
+		depthPeel_u_skip = internal::getUniform(depthPeelShader.id, "u_skip");
 	
-		renderQuad_u_texture = getUniform(renderQuadShader.id, "u_texture");
+		renderQuad_u_texture = internal::getUniform(renderQuadShader.id, "u_texture");
 	
 		glGenBuffers(1, &vertexData);
 		glGenVertexArrays(1, &vao);
